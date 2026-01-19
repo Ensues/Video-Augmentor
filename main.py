@@ -10,7 +10,7 @@ import time
 
 # Define input folder
 
-input_folder = r''  # Current directory
+input_folder = r'D:\Thesis 2\Input'  # Current directory
 
 # Get the parent directory
 
@@ -83,14 +83,14 @@ augmentations = [
     {'name': 'Translation', 'vf': 'setpts=PTS-STARTPTS,pad=iw+5:ih+5:5:5:black'},
     # pixelize=width=16:height=16: Tells FFmpeg to divide the image into 16×16 pixel blocks.
     # Not sure if I did it right
-    {'name': 'Superpixel', 'vf': 'pixelize=width=16:height=16'}
+    # {'name': 'Superpixel', 'vf': 'pixelize=width=16:height=16'}
 ]
 
 start = time.time()
 for filename in os.listdir(input_folder):
 
     # A video has a 30% chance of undergoing augmentation
-    if filename.lower().endswith(".mp4") and random.randrange(1, 101) <= 30:
+    if filename.lower().endswith(".mp4") and random.randrange(1, 101) <= 101:
         input_path = os.path.join(input_folder, filename)
         processed_count += 1
         
@@ -109,8 +109,10 @@ for filename in os.listdir(input_folder):
         for i in range(len(output_folders)):
             aug = random.choice(augmentations)
             # Repeatedly chooses a variant if the generated variant is chosen previously
-            while aug in variants:
+            # Only one between brightness and dimmer could be chosen
+            while aug in variants or (aug['name'] == 'Brighter' and {'name': 'Dimmer', 'vf': 'eq=brightness=-0.3'} in variants) or (aug['name'] == 'Dimmer' and {'name': 'Brighter', 'vf': 'eq=brightness=0.3'} in variants):
                 aug = random.choice(augmentations)
+
             variants.append(aug)
 
             current_var = variants[len(variants)-1]
