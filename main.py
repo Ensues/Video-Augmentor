@@ -83,7 +83,7 @@ augmentations = [
         # Luminance for the brightness
         # Strength for the intensity
         # Uniform to make the noise brighter or darker
-    {'name': 'Noise',     'folder': output_noise_folder,            'vf': 'noise=c0s=50:c0f=t+u'}, # White/Static noise
+    {'name': 'Noise',     'folder': output_noise_folder,            'vf': 'noise=c0s=50:c0f=t+u'},
     # pad=iw+5:ih+5:5:5: Adds 5 pixels of padding to the top and left
     # Tbh don't see much differences at a 5 pixel shift, not sure if its worth keeping
     {'name': 'Translation', 'folder': output_translation_folder,   'vf': 'setpts=PTS-STARTPTS,pad=iw+5:ih+5:5:5:black'},
@@ -110,7 +110,7 @@ for filename in os.listdir(input_folder):
             
             # Check if this specific augmentation already exists
             if os.path.exists(output_path):
-                print(f"  > Skipping {aug['name']}: Already exists") # Added this line
+                print(f"  > Skipping {aug['name']}: Already exists")
                 continue
                 
             try:
