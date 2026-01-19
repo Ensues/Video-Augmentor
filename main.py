@@ -10,7 +10,7 @@ import time
 
 # Define input folder
 
-input_folder = r'C:\Users\ejans\OneDrive\Documents\Thesis Stuff\Test'  # Current directory
+input_folder = r''  # Current directory
 
 # Get the parent directory
 
@@ -24,14 +24,14 @@ augmented_main_folder = os.path.join(parent_folder, 'Augmented Dataset Videos')
 
 output_1variant_folder = os.path.join(augmented_main_folder, '1Variant')
 output_2variants_folder = os.path.join(augmented_main_folder, '2Variants')
-output_3variants_folder = os.path.join(augmented_main_folder, '3Variants')
+output_final_folder = os.path.join(augmented_main_folder, 'Augmented Data')
 
 # List to check
 
 output_folders = [
     output_1variant_folder, 
     output_2variants_folder, 
-    output_3variants_folder,
+    output_final_folder,
 ]
 
 # Create the output folder if it doesn't exist
@@ -56,17 +56,11 @@ for filename in os.listdir(input_folder):
         except Exception:
             pass
 
-# Calculate expected total hours
-
-expected_total_seconds = total_seconds * 2
-
 # Convert seconds to H:M:S format, shows duration before augmenting
 
 formatted_original_time = str(datetime.timedelta(seconds=int(total_seconds)))
-formatted_expected_time = str(datetime.timedelta(seconds=int(expected_total_seconds)))
 
 print(f"Original total duration: {formatted_original_time}")
-print(f"Expected total duration after 3 variants: {formatted_expected_time}")
 
 # DATA AUGMENTATION
 
