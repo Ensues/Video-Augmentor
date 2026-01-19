@@ -103,7 +103,7 @@ for filename in os.listdir(input_folder):
         # Three distinct augmentation occurs per video
         for i in range(len(output_folders)):
             aug = random.choice(augmentations)
-            # Randomly chooses a variant
+            # Repeatedly chooses a variant if the generated variant is chosen previously
             while aug in variants:
                 aug = random.choice(augmentations)
             variants.append(aug)
