@@ -10,7 +10,7 @@ import time
 
 # Define input folder
 
-input_folder = r' '  # Current directory
+input_folder = r'C:\Users\ejans\OneDrive\Documents\Thesis Stuff\Test'  # Current directory
 
 # Get the parent directory
 
@@ -66,12 +66,13 @@ formatted_original_time = str(datetime.timedelta(seconds=int(total_seconds)))
 formatted_expected_time = str(datetime.timedelta(seconds=int(expected_total_seconds)))
 
 print(f"Original total duration: {formatted_original_time}")
-print(f"Expected total duration after 3 vairants: {formatted_expected_time}")
+print(f"Expected total duration after 3 variants: {formatted_expected_time}")
 
 # DATA AUGMENTATION
 
 # Limitations
 processed_count = 0
+total_augmented_seconds = 0
 
 augmentations = [
     {'name': 'Brighter', 'vf': 'eq=brightness=0.3'},
@@ -93,13 +94,21 @@ start = time.time()
 for filename in os.listdir(input_folder):
 
     # A video has a 30% chance of undergoing augmentation
-    if filename.lower().endswith(".mp4") and random.randrange(0, 100) <= 100:
+    if filename.lower().endswith(".mp4") and random.randrange(1, 100) <= 30:
         input_path = os.path.join(input_folder, filename)
         processed_count += 1
         
-        print(f"\nProcessing Video {processed_count}: {filename}")
+        # Calculate augmented video time
+        try:
+            probe = ffmpeg.probe(input_path)
+            vid_duration = float(probe['format']['duration'])
+            total_augmented_seconds += vid_duration # <--- Adding to final total
+        except:
+            vid_duration = 0
         
+        print(f"\nProcessing Video {processed_count}: {filename}")
         variants = []
+        
         # Three distinct augmentation occurs per video
         for i in range(len(output_folders)):
             aug = random.choice(augmentations)
@@ -132,9 +141,11 @@ for filename in os.listdir(input_folder):
 # FINISHING TOUCHES
 
 end = time.time()
-print(f"Processing time: {end-start} seconds")
+formatted_augmented_time = str(datetime.timedelta(seconds=int(total_augmented_seconds)))
 
 print("-" * 30)
 print("All videos have been augmented")
+print(f"Processing time: {round(end-start, 2)} seconds")
 print(f"Total duration of all source videos: {formatted_original_time}")
-print(f"Total duration of augmented videos: {formatted_expected_time}")
+print(f"Total duration of augmented videos: {formatted_augmented_time}")
+print("-" * 30)
