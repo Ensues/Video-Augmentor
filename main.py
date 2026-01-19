@@ -45,6 +45,8 @@ for folder in output_folders:
 
 total_seconds = 0
 
+print("-" * 30)
+
 print("Calculating total duration of all videos...")
 for filename in os.listdir(input_folder):
     if filename.lower().endswith(".mp4"):
