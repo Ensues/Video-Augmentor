@@ -8,7 +8,7 @@ import datetime
 
 # Define input folder
 
-input_folder = r'C:\Users\ejans\OneDrive\Documents\Thesis Stuff\Thesis Eric Datasets Cleaned'  # Current directory
+input_folder = r''  # Current directory
 
 # Get the parent directory (Thesis Stuff)
 
@@ -23,13 +23,16 @@ augmented_main_folder = os.path.join(parent_folder, 'Augmented Dataset Videos')
 output_brighter_folder = os.path.join(augmented_main_folder, 'Brighter')
 output_dimmer_folder = os.path.join(augmented_main_folder, 'Dimmer')
 output_noise_folder = os.path.join(augmented_main_folder, 'Noise')
-
+output_translation_folder = os.path.join(augmented_main_folder, 'Translation')
+output_superpixel_folder = os.path.join(augmented_main_folder, 'Superpixel')
 # List to check
 
 folders_to_create = [
     output_brighter_folder, 
     output_dimmer_folder, 
-    output_noise_folder
+    output_noise_folder,
+    output_translation_folder,
+    output_superpixel_folder
 ]
 num_variants = len(folders_to_create)
 
@@ -74,18 +77,24 @@ limit_aug = 1  # Set to None to process all, or a number (e.g., 1) to limit
 processed_count = 0
 
 augmentations = [
-    {'name': 'Brighter', 'folder': output_brighter_folder, 'vf': 'eq=brightness=0.3'},
-    {'name': 'Dimmer',   'folder': output_dimmer_folder,   'vf': 'eq=brightness=-0.3'},
+    {'name': 'Brighter', 'folder': output_brighter_folder,         'vf': 'eq=brightness=0.3'},
+    {'name': 'Dimmer',   'folder': output_dimmer_folder,           'vf': 'eq=brightness=-0.3'},
     # noise=Luminance=Strength:Function=Uniform
         # Luminance for the brightness
-        # Stremgth for the intensity
+        # Strength for the intensity
         # Uniform to make the noise brighter or darker
-    {'name': 'Salt',     'folder': output_noise_folder,     'vf': 'noise=c0s=50:c0f=t+u'} # White/Static noise
+    {'name': 'Noise',     'folder': output_noise_folder,            'vf': 'noise=c0s=50:c0f=t+u'}, # White/Static noise
+    # pad=iw+5:ih+5:5:5: Adds 5 pixels of padding to the top and left
+    # Tbh don't see much differences at a 5 pixel shift, not sure if its worth keeping
+    {'name': 'Translation', 'folder': output_translation_folder,   'vf': 'setpts=PTS-STARTPTS,pad=iw+5:ih+5:5:5:black'},
+    # pixelize=width=16:height=16: Tells FFmpeg to divide the image into 16×16 pixel blocks.
+    # Not sure if I did it right
+    {'name': 'Superpixel', 'folder': output_superpixel_folder,     'vf': 'pixelize=width=16:height=16'}
 ]
 
 for filename in os.listdir(input_folder):
     if limit_aug is not None and processed_count >= limit_aug:
-        print(f"Reached limit of {limit_aug}. Stopping.")
+        print(f"Reached limit of {limit_aug} Stopping")
         break
 
     if filename.lower().endswith(".mp4"):
@@ -94,10 +103,14 @@ for filename in os.listdir(input_folder):
         
         print(f"\nProcessing Video {processed_count}: {filename}")
         
+        # Augmentation loop code
+        
         for aug in augmentations:
             output_path = os.path.join(aug['folder'], filename)
             
+            # Check if this specific augmentation already exists
             if os.path.exists(output_path):
+                print(f"  > Skipping {aug['name']}: Already exists") # Added this line
                 continue
                 
             try:
