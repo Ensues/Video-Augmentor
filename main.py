@@ -25,6 +25,7 @@ output_dimmer_folder = os.path.join(augmented_main_folder, 'Dimmer')
 output_noise_folder = os.path.join(augmented_main_folder, 'Noise')
 output_translation_folder = os.path.join(augmented_main_folder, 'Translation')
 output_superpixel_folder = os.path.join(augmented_main_folder, 'Superpixel')
+
 # List to check
 
 folders_to_create = [
@@ -34,6 +35,7 @@ folders_to_create = [
     output_translation_folder,
     output_superpixel_folder
 ]
+
 num_variants = len(folders_to_create)
 
 # Create the output folder if it doesn't exist
@@ -73,6 +75,7 @@ print(f"Expected total duration across all {num_variants} output folders: {forma
 # DATA AUGMENTATION
 
 # Limitations
+
 limit_aug = 1  # Set to None to process all, or a number (e.g., 1) to limit
 processed_count = 0
 
