@@ -68,7 +68,7 @@ formatted_original_time = str(datetime.timedelta(seconds=int(total_seconds)))
 formatted_expected_time = str(datetime.timedelta(seconds=int(expected_total_seconds)))
 
 print(f"Original total duration: {formatted_original_time}")
-print(f"Expected total duration across all 4 output folders: {formatted_expected_time}")
+print(f"Expected total duration across all {num_variants} output folders: {formatted_expected_time}")
 
 # DATA AUGMENTATION
 
