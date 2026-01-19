@@ -4,16 +4,21 @@ import ffmpeg
 import os
 import datetime
 import random
+import time
 
 # FOLDER PREPARATION
 
 # Define input folder
 
-input_folder = os.path.join(os.getcwd(), 'input')  # Current directory
+input_folder = r' '  # Current directory
+
+# Get the parent directory
+
+parent_folder = os.path.dirname(input_folder)
 
 # Create the path for the main Augmented folder
 
-augmented_main_folder = os.path.join(os.getcwd(), 'Augmented Dataset Videos')
+augmented_main_folder = os.path.join(parent_folder, 'Augmented Dataset Videos')
 
 # Define output folders
 
@@ -84,6 +89,7 @@ augmentations = [
     {'name': 'Superpixel', 'vf': 'pixelize=width=16:height=16'}
 ]
 
+start = time.time()
 for filename in os.listdir(input_folder):
 
     # A video has a 30% chance of undergoing augmentation
@@ -124,6 +130,9 @@ for filename in os.listdir(input_folder):
                 print(f"  ! Error on {current_var['name']}: {e}")
 
 # FINISHING TOUCHES
+
+end = time.time()
+print(f"Processing time: {end-start} seconds")
 
 print("-" * 30)
 print("All videos have been augmented")
