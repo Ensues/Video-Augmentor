@@ -8,7 +8,7 @@ import datetime
 
 # Define input folder
 
-input_folder = r''  # Current directory
+input_folder = r'C:\Users\ejans\OneDrive\Documents\Thesis Stuff\Thesis Eric Datasets Cleaned'  # Current directory
 
 # Get the parent directory (Thesis Stuff)
 
@@ -22,16 +22,14 @@ augmented_main_folder = os.path.join(parent_folder, 'Augmented Dataset Videos')
 
 output_brighter_folder = os.path.join(augmented_main_folder, 'Brighter')
 output_dimmer_folder = os.path.join(augmented_main_folder, 'Dimmer')
-output_pepper_folder = os.path.join(augmented_main_folder, 'Pepper')
-output_salt_folder = os.path.join(augmented_main_folder, 'Salt')
+output_noise_folder = os.path.join(augmented_main_folder, 'Noise')
 
 # List to check
 
 folders_to_create = [
     output_brighter_folder, 
     output_dimmer_folder, 
-    output_pepper_folder, 
-    output_salt_folder
+    output_noise_folder
 ]
 num_variants = len(folders_to_create)
 
@@ -82,8 +80,7 @@ augmentations = [
         # Luminance for the brightness
         # Stremgth for the intensity
         # Uniform to make the noise brighter or darker
-    {'name': 'Pepper',   'folder': output_pepper_folder,   'vf': 'noise=c0s=50:c0f=u'}, # Darker noise
-    {'name': 'Salt',     'folder': output_salt_folder,     'vf': 'noise=c0s=50:c0f=t+u'} # White/Static noise
+    {'name': 'Salt',     'folder': output_noise_folder,     'vf': 'noise=c0s=50:c0f=t+u'} # White/Static noise
 ]
 
 for filename in os.listdir(input_folder):
