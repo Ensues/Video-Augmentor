@@ -138,7 +138,7 @@ end = time.time()
 formatted_augmented_time = str(datetime.timedelta(seconds=int(total_augmented_seconds)))
 
 print("-" * 30)
-print("All videos have been augmented")
+print("Videos have been augmented")
 print(f"Processing time: {round(end-start, 2)} seconds")
 print(f"Total duration of all source videos: {formatted_original_time}")
 print(f"Total duration of augmented videos: {formatted_augmented_time}")
