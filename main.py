@@ -3,45 +3,36 @@
 import ffmpeg
 import os
 import datetime
+import random
 
 # FOLDER PREPARATION
 
 # Define input folder
 
-input_folder = r''  # Current directory
-
-# Get the parent directory (Thesis Stuff)
-
-parent_folder = os.path.dirname(input_folder)
+input_folder = os.path.join(os.getcwd(), 'input')  # Current directory
 
 # Create the path for the main Augmented folder
 
-augmented_main_folder = os.path.join(parent_folder, 'Augmented Dataset Videos')
+augmented_main_folder = os.path.join(os.getcwd(), 'Augmented Dataset Videos')
 
 # Define output folders
 
-output_brighter_folder = os.path.join(augmented_main_folder, 'Brighter')
-output_dimmer_folder = os.path.join(augmented_main_folder, 'Dimmer')
-output_noise_folder = os.path.join(augmented_main_folder, 'Noise')
-output_translation_folder = os.path.join(augmented_main_folder, 'Translation')
-output_superpixel_folder = os.path.join(augmented_main_folder, 'Superpixel')
+output_1variant_folder = os.path.join(augmented_main_folder, '1Variant')
+output_2variants_folder = os.path.join(augmented_main_folder, '2Variants')
+output_3variants_folder = os.path.join(augmented_main_folder, '3Variants')
 
 # List to check
 
-folders_to_create = [
-    output_brighter_folder, 
-    output_dimmer_folder, 
-    output_noise_folder,
-    output_translation_folder,
-    output_superpixel_folder
+output_folders = [
+    output_1variant_folder, 
+    output_2variants_folder, 
+    output_3variants_folder,
 ]
-
-num_variants = len(folders_to_create)
 
 # Create the output folder if it doesn't exist
 
 os.makedirs(augmented_main_folder, exist_ok=True)
-for folder in folders_to_create:
+for folder in output_folders:
     os.makedirs(folder, exist_ok=True)
     print(f"Verified folder: {folder}")
 
@@ -62,72 +53,75 @@ for filename in os.listdir(input_folder):
 
 # Calculate expected total hours
 
-expected_total_seconds = total_seconds * num_variants
-        
+expected_total_seconds = total_seconds * 2
+
 # Convert seconds to H:M:S format, shows duration before augmenting
 
 formatted_original_time = str(datetime.timedelta(seconds=int(total_seconds)))
 formatted_expected_time = str(datetime.timedelta(seconds=int(expected_total_seconds)))
 
 print(f"Original total duration: {formatted_original_time}")
-print(f"Expected total duration across all {num_variants} output folders: {formatted_expected_time}")
+print(f"Expected total duration after 3 vairants: {formatted_expected_time}")
 
 # DATA AUGMENTATION
 
 # Limitations
-
-limit_aug = 1  # Set to None to process all, or a number (e.g., 1) to limit
 processed_count = 0
 
 augmentations = [
-    {'name': 'Brighter', 'folder': output_brighter_folder,         'vf': 'eq=brightness=0.3'},
-    {'name': 'Dimmer',   'folder': output_dimmer_folder,           'vf': 'eq=brightness=-0.3'},
+    {'name': 'Brighter', 'vf': 'eq=brightness=0.3'},
+    {'name': 'Dimmer', 'vf': 'eq=brightness=-0.3'},
     # noise=Luminance=Strength:Function=Uniform
         # Luminance for the brightness
         # Strength for the intensity
         # Uniform to make the noise brighter or darker
-    {'name': 'Noise',     'folder': output_noise_folder,           'vf': 'noise=c0s=50:c0f=t+u'},
+    {'name': 'Noise', 'vf': 'noise=c0s=50:c0f=t+u'},
     # pad=iw+5:ih+5:5:5: Adds 5 pixels of padding to the top and left
     # Tbh don't see much differences at a 5 pixel shift, not sure if its worth keeping
-    {'name': 'Translation', 'folder': output_translation_folder,   'vf': 'setpts=PTS-STARTPTS,pad=iw+5:ih+5:5:5:black'},
+    {'name': 'Translation', 'vf': 'setpts=PTS-STARTPTS,pad=iw+5:ih+5:5:5:black'},
     # pixelize=width=16:height=16: Tells FFmpeg to divide the image into 16×16 pixel blocks.
     # Not sure if I did it right
-    {'name': 'Superpixel', 'folder': output_superpixel_folder,     'vf': 'pixelize=width=16:height=16'}
+    {'name': 'Superpixel', 'vf': 'pixelize=width=16:height=16'}
 ]
 
 for filename in os.listdir(input_folder):
-    if limit_aug is not None and processed_count >= limit_aug:
-        print(f"Reached limit of {limit_aug} Stopping")
-        break
 
-    if filename.lower().endswith(".mp4"):
+    # A video has a 30% chance of undergoing augmentation
+    if filename.lower().endswith(".mp4") and random.randrange(0, 100) <= 100:
         input_path = os.path.join(input_folder, filename)
         processed_count += 1
         
         print(f"\nProcessing Video {processed_count}: {filename}")
         
-        # Augmentation loop code
-        
-        for aug in augmentations:
-            output_path = os.path.join(aug['folder'], filename)
-            
+        variants = []
+        # Three distinct augmentation occurs per video
+        for i in range(len(output_folders)):
+            aug = random.choice(augmentations)
+            # Randomly chooses a variant
+            while aug in variants:
+                aug = random.choice(augmentations)
+            variants.append(aug)
+
+            current_var = variants[len(variants)-1]
+            output_path = os.path.join(output_folders[i], filename)
+
             # Check if this specific augmentation already exists
             if os.path.exists(output_path):
-                print(f"  > Skipping {aug['name']}: Already exists")
+                print(f"  > Skipping Augmentation {i - 1}: Already exists")
                 continue
                 
             try:
                 # Logic: Only apply the specific augmentation filter
                 (
                     ffmpeg
-                    .input(input_path)
-                    .output(output_path, vf=aug['vf']) 
+                    .input(input_path if i == 0 else os.path.join(output_folders[i-1], filename))
+                    .output(output_path, vf=current_var['vf']) 
                     .overwrite_output()
                     .run(quiet=True)
                 )
-                print(f"  > Done: {aug['name']}")
+                print(f"  > Done: {current_var['name']}")
             except ffmpeg.Error as e:
-                print(f"  ! Error on {aug['name']}: {e}")
+                print(f"  ! Error on {current_var['name']}: {e}")
 
 # FINISHING TOUCHES
 
