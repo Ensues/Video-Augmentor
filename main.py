@@ -83,14 +83,14 @@ augmentations = [
     {'name': 'Translation', 'vf': 'setpts=PTS-STARTPTS,pad=iw+5:ih+5:5:5:black'},
     # pixelize=width=16:height=16: Tells FFmpeg to divide the image into 16×16 pixel blocks.
     # Not sure if I did it right
-    # {'name': 'Superpixel', 'vf': 'pixelize=width=16:height=16'}
+    {'name': 'Superpixel', 'vf': 'pixelize=width=16:height=16'}
 ]
 
 start = time.time()
 for filename in os.listdir(input_folder):
 
     # A video has a 30% chance of undergoing augmentation
-    if filename.lower().endswith(".mp4") and random.randrange(1, 101) <= 101:
+    if filename.lower().endswith(".mp4") and random.randrange(1, 101) <= 30:
         input_path = os.path.join(input_folder, filename)
         processed_count += 1
         
