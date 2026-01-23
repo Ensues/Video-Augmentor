@@ -6,18 +6,44 @@ import datetime
 import random
 import time
 
+# Functions
+
+def get_folder_size(folder_path):
+    total_size = 0
+    for dirpath, dirnames, filenames in os.walk(folder_path):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            # skip if it is symbolic link
+            if not os.path.islink(fp):
+                total_size += os.path.getsize(fp)
+    # Returns size in MB for readability
+    return round(total_size / (1024 * 1024), 2)
+
+def get_video_stats(folder_path):
+    total_seconds = 0
+    file_count = 0
+    for filename in os.listdir(folder_path):
+        if filename.lower().endswith(".mp4"):
+            path = os.path.join(folder_path, filename)
+            try:
+                probe = ffmpeg.probe(path)
+                duration = float(probe['format']['duration'])
+                total_seconds += duration
+                file_count += 1
+            except Exception:
+                # Skip files that are corrupted or not readable by ffmpeg
+                pass
+    
+    formatted_time = str(datetime.timedelta(seconds=int(total_seconds)))
+    return formatted_time, total_seconds, file_count
+
+
 # FOLDER PREPARATION
 
 # Define input folder
 
-input_folder = r'D:\Thesis 2\Input'  # Current directory
-
-# Get the parent directory
-
+input_folder = r'C:\Users\ejans\OneDrive\Documents\Thesis Stuff\Test'
 parent_folder = os.path.dirname(input_folder)
-
-# Create the path for the main Augmented folder
-
 augmented_main_folder = os.path.join(parent_folder, 'Augmented Dataset Videos')
 
 # Define output folders
@@ -43,26 +69,20 @@ for folder in output_folders:
 
 # Calculating the total duration
 
-total_seconds = 0
-
 print("-" * 30)
 
-print("Calculating total duration of all videos...")
-for filename in os.listdir(input_folder):
-    if filename.lower().endswith(".mp4"):
-        path = os.path.join(input_folder, filename)
-        try:
-            probe = ffmpeg.probe(path)
-            duration = float(probe['format']['duration'])
-            total_seconds += duration
-        except Exception:
-            pass
+print("Calculating total duration and size of input videos...")
+
+input_size_mb = get_folder_size(input_folder) 
+formatted_original_time, total_input_seconds, input_file_count = get_video_stats(input_folder)
 
 # Convert seconds to H:M:S format, shows duration before augmenting
 
-formatted_original_time = str(datetime.timedelta(seconds=int(total_seconds)))
+print(f"Total duration of all source videos: {formatted_original_time}")
+print(f"Total size of input folder: {input_size_mb} MB")
 
-print(f"Original total duration: {formatted_original_time}")
+print("-" * 30)
+
 
 # DATA AUGMENTATION
 
@@ -79,10 +99,8 @@ augmentations = [
         # Uniform to make the noise brighter or darker
     {'name': 'Noise', 'vf': 'noise=c0s=50:c0f=t+u'},
     # pad=iw+5:ih+5:5:5: Adds 5 pixels of padding to the top and left
-    # Tbh don't see much differences at a 5 pixel shift, not sure if its worth keeping
     {'name': 'Translation', 'vf': 'setpts=PTS-STARTPTS,pad=iw+5:ih+5:5:5:black'},
     # pixelize=width=16:height=16: Tells FFmpeg to divide the image into 16×16 pixel blocks.
-    # Not sure if I did it right
     {'name': 'Superpixel', 'vf': 'pixelize=width=16:height=16'}
 ]
 
@@ -98,7 +116,8 @@ for filename in os.listdir(input_folder):
         try:
             probe = ffmpeg.probe(input_path)
             vid_duration = float(probe['format']['duration'])
-            total_augmented_seconds += vid_duration # <--- Adding to final total
+            # Since we create 3 variants per chosen video, we add it 3 times
+            total_augmented_seconds += (vid_duration * 3)
         except:
             vid_duration = 0
         
@@ -120,7 +139,7 @@ for filename in os.listdir(input_folder):
 
             # Check if this specific augmentation already exists
             if os.path.exists(output_path):
-                print(f"  > Skipping Augmentation {i - 1}: Already exists")
+                print(f"  > Skipping Augmentation {i}: Already exists")
                 continue
                 
             try:
@@ -141,11 +160,20 @@ for filename in os.listdir(input_folder):
 end = time.time()
 formatted_augmented_time = str(datetime.timedelta(seconds=int(total_augmented_seconds)))
 
+# Correctly calculate stats for the generated data
+output_size_mb = get_folder_size(augmented_main_folder)
+
+
 print("-" * 30)
 print("Videos have been augmented")
 print(f"Processing time: {round(end-start, 2)} seconds")
 print(f"Total duration of all source videos: {formatted_original_time}")
 print(f"Total duration of augmented videos: {formatted_augmented_time}")
-print("-" * 30)
 
-# Test Again
+print(f"\nTotal duration of all source videos: {formatted_original_time}")
+print(f"Processing time: {round(end-start, 2)} seconds")
+print(f"Total source videos: {input_file_count}\n")
+
+print(f"\nTotal size of input folder: {input_size_mb} MB")
+print(f"Total size of augmented main folder: {output_size_mb} MB")
+print("-" * 30)
