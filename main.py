@@ -42,7 +42,7 @@ def get_video_stats(folder_path):
 
 # Define input folder
 
-input_folder = r'C:\Users\ejans\OneDrive\Documents\Thesis Stuff\Test'
+input_folder = r'D:\Thesis 2\Input'
 parent_folder = os.path.dirname(input_folder)
 augmented_main_folder = os.path.join(parent_folder, 'Augmented Dataset Videos')
 
@@ -76,8 +76,6 @@ print("Calculating total duration and size of input videos...")
 input_size_mb = get_folder_size(input_folder) 
 formatted_original_time, total_input_seconds, input_file_count = get_video_stats(input_folder)
 
-# Convert seconds to H:M:S format, shows duration before augmenting
-
 print(f"Total duration of all source videos: {formatted_original_time}")
 print(f"Total size of input folder: {input_size_mb} MB")
 
@@ -100,7 +98,7 @@ augmentations = [
     {'name': 'Noise', 'vf': 'noise=c0s=50:c0f=t+u'},
     # pad=iw+5:ih+5:5:5: Adds 5 pixels of padding to the top and left
     {'name': 'Translation', 'vf': 'setpts=PTS-STARTPTS,pad=iw+5:ih+5:5:5:black'},
-    # pixelize=width=16:height=16: Tells FFmpeg to divide the image into 16×16 pixel blocks.
+    # pixelize=width=16:height=16: Tells FFmpeg to divide the image into 16×16 pixel blocks
     {'name': 'Superpixel', 'vf': 'pixelize=width=16:height=16'}
 ]
 
@@ -160,19 +158,18 @@ for filename in os.listdir(input_folder):
 end = time.time()
 formatted_augmented_time = str(datetime.timedelta(seconds=int(total_augmented_seconds)))
 
-# Correctly calculate stats for the generated data
-output_size_mb = get_folder_size(augmented_main_folder)
-
+output_size_mb = get_folder_size(output_final_folder) 
+formatted_augmented_time, total_output_seconds, output_file_count = get_video_stats(output_final_folder)
 
 print("-" * 30)
 print("Videos have been augmented")
 print(f"Processing time: {round(end-start, 2)} seconds")
-print(f"Total duration of all source videos: {formatted_original_time}")
-print(f"Total duration of augmented videos: {formatted_augmented_time}")
 
 print(f"\nTotal duration of all source videos: {formatted_original_time}")
-print(f"Processing time: {round(end-start, 2)} seconds")
-print(f"Total source videos: {input_file_count}\n")
+print(f"Total duration of augmented videos: {formatted_augmented_time}")
+
+print(f"\nTotal source videos: {input_file_count}")
+print(f"Total augmented videos: {output_file_count}")
 
 print(f"\nTotal size of input folder: {input_size_mb} MB")
 print(f"Total size of augmented main folder: {output_size_mb} MB")
