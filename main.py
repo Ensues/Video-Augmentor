@@ -5,12 +5,13 @@ import os
 import datetime
 import random
 import time
+import shutil
 
 # FOLDER PREPARATION
 
 # Define input folder
 
-input_folder = r'D:\Thesis 2\Input'  # Current directory
+input_folder = r''  # Current directory
 
 # Get the parent directory
 
@@ -19,6 +20,9 @@ parent_folder = os.path.dirname(input_folder)
 # Create the path for the main Augmented folder
 
 augmented_main_folder = os.path.join(parent_folder, 'Augmented Dataset Videos')
+
+# Create the path for a folder of not augmented videos 
+not_augmented_folder = os.path.join(parent_folder, 'Not Augmented Videos')
 
 # Define output folders
 
@@ -37,6 +41,7 @@ output_folders = [
 # Create the output folder if it doesn't exist
 
 os.makedirs(augmented_main_folder, exist_ok=True)
+os.makedirs(not_augmented_folder, exist_ok=True)
 for folder in output_folders:
     os.makedirs(folder, exist_ok=True)
     print(f"Verified folder: {folder}")
@@ -135,6 +140,10 @@ for filename in os.listdir(input_folder):
                 print(f"  > Done: {current_var['name']}")
             except ffmpeg.Error as e:
                 print(f"  ! Error on {current_var['name']}: {e}")
+    else:
+        input_path = os.path.join(input_folder, filename)
+        output_path = os.path.join(not_augmented_folder, filename)
+        shutil.copy(input_path, output_path)
 
 # FINISHING TOUCHES
 
